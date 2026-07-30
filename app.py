@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import joblib
 model = joblib.load("models/random_forest.pkl")
-scaler = joblib.load("models/scaler.pkl")
 st.set_page_config(
     page_title="Heart Disease Prediction",
     page_icon="❤️",
