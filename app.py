@@ -1,9 +1,18 @@
 import streamlit as st
-st.title("Deployment Test")
-st.success("Streamlit is working!")
-import pandas as pd
-import joblib
-model = joblib.load("models/random_forest.pkl")
+import subprocess
+import sys
+
+st.set_page_config(page_title="Debug")
+
+st.write("Python:", sys.version)
+
+result = subprocess.run(
+    [sys.executable, "-m", "pip", "list"],
+    capture_output=True,
+    text=True,
+)
+
+st.text(result.stdout)
 st.set_page_config(
     page_title="Heart Disease Prediction",
     page_icon="❤️",
