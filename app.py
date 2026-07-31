@@ -121,25 +121,12 @@ if st.button("🔍 Predict Heart Disease"):
     "restecg_st-t abnormality": [restecg_st]
 })
 
-st.write("Input Data:")
-st.write(input_data)
+  
 
-try:
+    st.write("Input Data:")
+    st.write(input_data)
+
     prediction = model.predict(input_data)
-    st.write("Raw prediction:", prediction)
-
-    prediction_map = {
-        0: "🟢 No Heart Disease",
-        1: "🟡 Mild Heart Disease",
-        2: "🟠 Moderate Heart Disease",
-        3: "🔴 Severe Heart Disease",
-        4: "🚨 Critical Heart Disease"
-    }
-
-    st.success(f"Prediction: {prediction_map[int(prediction[0])]}")
-
-except Exception as e:
-    st.error(f"{type(e).__name__}: {e}")
 
     prediction_map = {
         0: "🟢 No Heart Disease",
