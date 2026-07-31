@@ -1,32 +1,35 @@
 import streamlit as st
-import subprocess
-import sys
+import pandas as pd
+import joblib
 
-st.set_page_config(page_title="Debug")
-
-st.write("Python:", sys.version)
-
-result = subprocess.run(
-    [sys.executable, "-m", "pip", "list"],
-    capture_output=True,
-    text=True,
-)
-
-st.text(result.stdout)
+# ---------------- PAGE CONFIG ----------------
 st.set_page_config(
     page_title="Heart Disease Prediction",
     page_icon="❤️",
     layout="wide"
 )
+
+# ---------------- LOAD MODEL ----------------
+model = joblib.load("models/random_forest.pkl")
+
+# ---------------- TITLE ----------------
 st.title("❤️ Heart Disease Prediction System")
 st.write(
     "Predict the likelihood of heart disease using patient clinical information."
 )
+
 st.header("Patient Information")
 
+# ---------------- INPUTS ----------------
 col1, col2 = st.columns(2)
+
 with col1:
-    age = st.number_input("Age", min_value=1, max_value=120, value=45)
+    age = st.number_input(
+        "Age",
+        min_value=1,
+        max_value=120,
+        value=45
+    )
 
     sex = st.selectbox(
         "Sex",
@@ -35,7 +38,12 @@ with col1:
 
     cp = st.selectbox(
         "Chest Pain Type",
-        ["typical angina", "atypical angina", "non-anginal", "asymptomatic"]
+        [
+            "typical angina",
+            "atypical angina",
+            "non-anginal",
+            "asymptomatic"
+        ]
     )
 
     trestbps = st.number_input(
@@ -51,7 +59,9 @@ with col1:
         max_value=700,
         value=200
     )
+
 with col2:
+
     fbs = st.selectbox(
         "Fasting Blood Sugar",
         [True, False]
@@ -59,7 +69,11 @@ with col2:
 
     restecg = st.selectbox(
         "Resting ECG",
-        ["normal", "lv hypertrophy", "st-t abnormality"]
+        [
+            "normal",
+            "lv hypertrophy",
+            "st-t abnormality"
+        ]
     )
 
     thalch = st.number_input(
@@ -81,14 +95,16 @@ with col2:
         value=1.0
     )
 
+# ---------------- PREDICTION ----------------
 
 if st.button("🔍 Predict Heart Disease"):
+
     sex_male = 1 if sex == "Male" else 0
 
     fbs = int(fbs)
     exang = int(exang)
 
-    # Chest Pain
+    # Chest Pain Encoding
     cp_non_anginal = 0
     cp_typical_angina = 0
 
@@ -97,7 +113,7 @@ if st.button("🔍 Predict Heart Disease"):
     elif cp == "typical angina":
         cp_typical_angina = 1
 
-    # Rest ECG
+    # Rest ECG Encoding
     restecg_normal = 0
     restecg_st = 0
 
@@ -107,33 +123,34 @@ if st.button("🔍 Predict Heart Disease"):
         restecg_st = 1
 
     input_data = pd.DataFrame({
-    "age": [age],
-    "trestbps": [trestbps],
-    "chol": [chol],
-    "fbs": [fbs],
-    "thalch": [thalch],
-    "exang": [exang],
-    "oldpeak": [oldpeak],
-    "sex_Male": [sex_male],
-    "cp_non-anginal": [cp_non_anginal],
-    "cp_typical angina": [cp_typical_angina],
-    "restecg_normal": [restecg_normal],
-    "restecg_st-t abnormality": [restecg_st]
-})
+        "age": [age],
+        "trestbps": [trestbps],
+        "chol": [chol],
+        "fbs": [fbs],
+        "thalch": [thalch],
+        "exang": [exang],
+        "oldpeak": [oldpeak],
+        "sex_Male": [sex_male],
+        "cp_non-anginal": [cp_non_anginal],
+        "cp_typical angina": [cp_typical_angina],
+        "restecg_normal": [restecg_normal],
+        "restecg_st-t abnormality": [restecg_st]
+    })
 
-  
+    try:
+        prediction = model.predict(input_data)
 
-    st.write("Input Data:")
-    st.write(input_data)
+        prediction_map = {
+            0: "🟢 No Heart Disease",
+            1: "🟡 Mild Heart Disease",
+            2: "🟠 Moderate Heart Disease",
+            3: "🔴 Severe Heart Disease",
+            4: "🚨 Critical Heart Disease"
+        }
 
-    prediction = model.predict(input_data)
+        st.success(
+            f"Prediction: {prediction_map[int(prediction[0])]}"
+        )
 
-    prediction_map = {
-        0: "🟢 No Heart Disease",
-        1: "🟡 Mild Heart Disease",
-        2: "🟠 Moderate Heart Disease",
-        3: "🔴 Severe Heart Disease",
-        4: "🚨 Critical Heart Disease"
-    }
-
-    st.success(f"Prediction: {prediction_map[int(prediction[0])]}")
+    except Exception as e:
+        st.error(f"{type(e).__name__}: {e}")
