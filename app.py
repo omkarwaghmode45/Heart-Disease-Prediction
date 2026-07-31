@@ -1,4 +1,6 @@
 import streamlit as st
+st.title("Deployment Test")
+st.success("Streamlit is working!")
 import pandas as pd
 import joblib
 model = joblib.load("models/random_forest.pkl")
