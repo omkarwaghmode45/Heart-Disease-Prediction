@@ -97,6 +97,8 @@ with col2:
 
 # ---------------- PREDICTION ----------------
 
+# ---------------- PREDICTION ----------------
+
 if st.button("🔍 Predict Heart Disease"):
 
     sex_male = 1 if sex == "Male" else 0
@@ -138,7 +140,12 @@ if st.button("🔍 Predict Heart Disease"):
     })
 
     try:
-        prediction = model.predict(input_data)
+
+        prediction = model.predict(input_data)[0]
+
+        confidence = None
+        if hasattr(model, "predict_proba"):
+            confidence = model.predict_proba(input_data).max() * 100
 
         prediction_map = {
             0: "🟢 No Heart Disease",
@@ -148,8 +155,82 @@ if st.button("🔍 Predict Heart Disease"):
             4: "🚨 Critical Heart Disease"
         }
 
-        st.success(
-            f"Prediction: {prediction_map[int(prediction[0])]}"
+        st.divider()
+
+        st.subheader("🩺 Prediction Result")
+
+        st.success(prediction_map[prediction])
+
+        if confidence is not None:
+            st.metric(
+                label="Prediction Confidence",
+                value=f"{confidence:.2f}%"
+            )
+
+        st.subheader("💡 Health Recommendations")
+
+        if prediction == 0:
+            st.success("""
+✅ No significant signs of heart disease detected.
+
+**Recommendations**
+- Maintain a healthy balanced diet.
+- Exercise for at least 30 minutes daily.
+- Avoid smoking and excessive alcohol.
+- Get regular health checkups.
+""")
+
+        elif prediction == 1:
+            st.warning("""
+🟡 Mild Heart Disease Risk
+
+**Recommendations**
+- Consult a physician.
+- Reduce cholesterol and blood pressure.
+- Follow a healthy diet.
+- Exercise regularly.
+""")
+
+        elif prediction == 2:
+            st.warning("""
+🟠 Moderate Heart Disease Risk
+
+**Recommendations**
+- Schedule a cardiology consultation.
+- Monitor blood pressure and blood sugar.
+- Reduce salt and saturated fats.
+- Follow prescribed medications if any.
+""")
+
+        elif prediction == 3:
+            st.error("""
+🔴 Severe Heart Disease Risk
+
+**Recommendations**
+- Consult a cardiologist immediately.
+- Follow all medical advice carefully.
+- Monitor cholesterol and blood pressure.
+- Adopt a heart-healthy lifestyle.
+""")
+
+        else:
+            st.error("""
+🚨 Critical Heart Disease Risk
+
+**Recommendations**
+- Seek immediate medical attention.
+- Visit the nearest hospital or cardiologist.
+- Follow emergency medical guidance.
+- Do not ignore symptoms such as chest pain or shortness of breath.
+""")
+
+        with st.expander("📊 View Encoded Input Data"):
+            st.dataframe(input_data, use_container_width=True)
+
+        st.info(
+            "⚠️ **Disclaimer:** This prediction is generated using a Machine Learning model "
+            "and is intended for educational purposes only. "
+            "It should not replace professional medical diagnosis or treatment."
         )
 
     except Exception as e:
